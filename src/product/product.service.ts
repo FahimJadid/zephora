@@ -22,4 +22,18 @@ export class ProductService {
   async findOne(id: string): Promise<Product> {
     return this.productModel.findById(id).exec();
   }
+
+  async update(id: string, product: Product): Promise<Product> {
+    const updatedProduct = await this.productModel.findByIdAndUpdate(
+      id,
+      product,
+      { new: true }, // Set `new` option to true to return the updated document
+    );
+    return updatedProduct;
+  }
+
+  async delete(id: string): Promise<Product> {
+    const deletedProduct = await this.productModel.findByIdAndDelete(id);
+    return deletedProduct;
+  }
 }
