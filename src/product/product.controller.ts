@@ -1,4 +1,4 @@
-import { Controller, Body, Post, Get } from '@nestjs/common';
+import { Controller, Body, Post, Get, Param } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { Product } from './product.schema';
 
@@ -14,5 +14,10 @@ export class ProductController {
   @Get()
   findAll(): Promise<Product[]> {
     return this.productService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string): Promise<Product> {
+    return this.productService.findOne(id);
   }
 }
