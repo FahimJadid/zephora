@@ -15,12 +15,25 @@ export class UserService {
     return { name, email };
   }
 
-  async create(user: User): Promise<User> {
-    const createdUser = new this.userModel(user);
+  async create(newUserDto: NewUserDto): Promise<User> {
+    const { name, email, password } = newUserDto;
+    // const hashedPassword = await this.hashPassword(password);
+    const createdUser = new this.userModel({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
     return createdUser.save();
   }
 
   async findByEmail(email: string): Promise<User | null> {
     return this.userModel.findOne({ email }).exec();
+  }
+
+  async findById(id: string): Promise<UserDetails | null> {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) return null;
+    return this._getUserDetails(user);
   }
 }
