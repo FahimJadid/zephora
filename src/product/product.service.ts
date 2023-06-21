@@ -29,7 +29,7 @@ export class ProductService {
       product,
       { new: true }, // Set `new` option to true to return the updated document
     );
-    return updatedProduct;
+    return updatedProduct.save();
   }
 
   async delete(id: string): Promise<Product> {
