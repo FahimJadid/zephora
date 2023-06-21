@@ -10,7 +10,7 @@ export class UserService {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
-  _getUserDetails(user: UserDocument): UserDetails {
+  _getUserDetails(user: User): UserDetails {
     const { name, email } = user;
     return { name, email };
   }
@@ -18,5 +18,9 @@ export class UserService {
   async create(user: User): Promise<User> {
     const createdUser = new this.userModel(user);
     return createdUser.save();
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userModel.findOne({ email }).exec();
   }
 }
