@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
-import { UserDetails } from './../user/user-details.interface';
 import { NewUserDto } from './../user/dto/new-user.dto';
 import { ExistingUserDto } from './../user/dto/existing-user.dto';
 import { UserService } from './../user/user.service';
+import { UserDetails } from 'src/user/user-details.interface';
 
 @Injectable()
 export class AuthService {
@@ -49,5 +49,22 @@ export class AuthService {
     hashedPassword: string,
   ): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  async validateUser(existingUserDto: ExistingUserDto): Promise<any> {
+    const { email, password } = existingUserDto;
+    // Find the user by email
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    // // Check if the provided password matches the hashed password
+    const isMatch = await this.matchPassword(password, user.password);
+
+    if (!isMatch) {
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    }
+    return this.userService._getUserDetails(user);
   }
 }
