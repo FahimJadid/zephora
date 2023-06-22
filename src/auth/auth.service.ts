@@ -43,4 +43,11 @@ export class AuthService {
     // Return the user details
     return this.userService._getUserDetails(createdUser);
   }
+
+  async matchPassword(
+    plainPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    return bcrypt.compare(plainPassword, hashedPassword);
+  }
 }
