@@ -5,10 +5,14 @@ import { NewUserDto } from './../user/dto/new-user.dto';
 import { ExistingUserDto } from './../user/dto/existing-user.dto';
 import { UserService } from './../user/user.service';
 import { UserDetails } from 'src/user/user-details.interface';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   // Hashes the provided password using bcrypt with a salt of 12 rounds
   async hashPassword(password: string): Promise<string> {
@@ -17,9 +21,7 @@ export class AuthService {
   }
 
   // Registers a new user with the provided user data
-  async register(
-    newUserDto: Readonly<NewUserDto>,
-  ): Promise<UserDetails | null | string> {
+  async register(newUserDto: Readonly<NewUserDto>): Promise<UserDetails | any> {
     const { email, password } = newUserDto;
 
     // Check if a user with the provided email already exists
@@ -51,8 +53,10 @@ export class AuthService {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 
-  async validateUser(existingUserDto: ExistingUserDto): Promise<any> {
-    const { email, password } = existingUserDto;
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<UserDetails | null> {
     // Find the user by email
     const user = await this.userService.findByEmail(email);
     if (!user) {
@@ -66,5 +70,21 @@ export class AuthService {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
     return this.userService._getUserDetails(user);
+  }
+
+  async login(
+    existingUserDto: ExistingUserDto,
+  ): Promise<{ token: string } | null> {
+    const { email, password } = existingUserDto;
+
+    const user = await this.validateUser(email, password);
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    const jwt = await this.jwtService.signAsync({ user });
+
+    // Return the generated token
+    return { token: jwt };
   }
 }
